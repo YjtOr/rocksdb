@@ -40,6 +40,7 @@ void setValueBuffer(char* value_buf, int size,
     }
 }
 
+//初始化rocksdb实例
 void init(const std::string& key_path, const std::string& db_path, rocksdb::DB** db,
 	  rocksdb::Options* options, rocksdb::BlockBasedTableOptions* table_options,
 	  int use_direct_io, uint64_t key_count, uint64_t value_size,
@@ -49,7 +50,8 @@ void init(const std::string& key_path, const std::string& db_path, rocksdb::DB**
     std::uniform_int_distribution<unsigned long long> dist(0, ULLONG_MAX);
     
     char value_buf[value_size];
-
+    //设置过滤器级别
+    //leveldb提供了通用的过滤器接口FilterPolicy
     if (filter_type == 1)
 	table_options->filter_policy.reset(rocksdb::NewBloomFilterPolicy(14, false));
     else if (filter_type == 2)
@@ -83,7 +85,7 @@ void init(const std::string& key_path, const std::string& db_path, rocksdb::DB**
     options->max_open_files = -1; // pre-load indexes and filters
 
     // 2GB config
-    options->write_buffer_size = 2 * 1048576;
+    options->write_buffer_size = 2 * 1048576;//2M
     options->max_bytes_for_level_base = 10 * 1048576;
     options->target_file_size_base = 2 * 1048576;
 
@@ -126,7 +128,7 @@ void init(const std::string& key_path, const std::string& db_path, rocksdb::DB**
 	std::cout << "inserting keys\n";
 	for (uint64_t i = 0; i < key_count; i++) {
 	    key = keys[i];
-	    key = htobe64(key);
+	    key = htobe64(key);//将主机字节顺序转换为big-endian顺序
 	    rocksdb::Slice s_key(reinterpret_cast<const char*>(&key), sizeof(key));
 	    setValueBuffer(value_buf, value_size, e, dist);
 	    rocksdb::Slice s_value(value_buf, value_size);
@@ -143,7 +145,7 @@ void init(const std::string& key_path, const std::string& db_path, rocksdb::DB**
 	//std::cout << "compacting\n";
 	//rocksdb::CompactRangeOptions compact_range_options;
 	//(*db)->CompactRange(compact_range_options, NULL, NULL);
-    }
+    } 
 }
 
 void close(rocksdb::DB* db) {
@@ -241,8 +243,8 @@ void benchPointQuery(rocksdb::DB* db, rocksdb::Options* options,
 		     uint64_t key_range, uint64_t query_count) {
     //std::random_device rd;
     //std::mt19937_64 e(rd());
-    std::mt19937_64 e(2017);
-    std::uniform_int_distribution<unsigned long long> dist(0, key_range);
+    std::mt19937_64 e(2017);//产生随机数
+    std::uniform_int_distribution<unsigned long long> dist(0, key_range);//随机平均分布对象
 
     std::vector<uint64_t> query_keys;
 
@@ -314,16 +316,16 @@ void benchOpenRangeQuery(rocksdb::DB* db, rocksdb::Options* options, uint64_t ke
 
     clock_gettime(CLOCK_MONOTONIC, &ts_start);
 
-    for (uint64_t i = 0; i < query_count; i++) {
-	uint64_t key = query_keys[i];
+    for (uint64_t i = 0; i < query_count; i++) {//进行query_count次查询
+	uint64_t key = query_keys[i];//取出随机产生的key
 	key = htobe64(key);
-	rocksdb::Slice s_key(reinterpret_cast<const char*>(&key), sizeof(key));
+	rocksdb::Slice s_key(reinterpret_cast<const char*>(&key), sizeof(key));//转为slice类型
 	
 	std::string s_value;
 	uint64_t value;
 
 	uint64_t j = 0;
-	for (it->Seek(s_key); it->Valid() && j < scan_length; it->Next(), j++) {
+	for (it->Seek(s_key); it->Valid() && j < scan_length; it->Next(), j++) {//
 	    uint64_t found_key = *reinterpret_cast<const uint64_t*>(it->key().data());
 	    assert(it->value().size() >= sizeof(uint64_t));
 	    value = *reinterpret_cast<const uint64_t*>(it->value().data());
@@ -518,7 +520,7 @@ int main(int argc, const char* argv[]) {
     //=========================================================================
 
     //testScan(db, kKeyCount);
-
+    //在proc中查看linux的内存使用相关信息
     uint64_t mem_free_before = getMemFree();
     uint64_t mem_available_before = getMemAvailable();
     //std::cout << options.statistics->ToString() << "\n";

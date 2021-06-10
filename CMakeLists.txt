@@ -57,7 +57,8 @@ else()
     endif()
   endif()
 
-  option(WITH_SNAPPY "build with SNAPPY" OFF)
+  #option(WITH_SNAPPY "build with SNAPPY" OFF)
+  option(WITH_SNAPPY "build with SNAPPY" ON)
   if(WITH_SNAPPY)
     find_package(snappy REQUIRED)
     add_definitions(-DSNAPPY)
@@ -215,7 +216,7 @@ if(FAIL_ON_WARNINGS)
   if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX")
   else() # assume GCC
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+	  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
   endif()
 endif()
 
