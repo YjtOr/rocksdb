@@ -1,3 +1,6 @@
 [submodule "third-party/SuRF"]
 	path = third-party/SuRF
-	url = git@github.com:efficient/SuRF.git
+	url = https://github.com/efficient/SuRF
+[submodule "third-party/third-party/SuRF"]
+	path = third-party/third-party/SuRF
+	url = https://github.com/efficient/SuRF
