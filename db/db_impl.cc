@@ -875,7 +875,7 @@ InternalIterator* DBImpl::NewInternalIterator(
       &cfd->internal_comparator(), arena,
       !read_options.total_order_seek &&
           cfd->ioptions()->prefix_extractor != nullptr);
-  // Collect iterator for mutable mem
+  // Collect iterator for mutable mem 1. 当前column family活跃的memtable
   merge_iter_builder.AddIterator(
       super_version->mem->NewIterator(read_options, arena));
   std::unique_ptr<InternalIterator> range_del_iter;
@@ -885,7 +885,7 @@ InternalIterator* DBImpl::NewInternalIterator(
         super_version->mem->NewRangeTombstoneIterator(read_options));
     s = range_del_agg->AddTombstones(std::move(range_del_iter));
   }
-  // Collect all needed child iterators for immutable memtables
+  // Collect all needed child iterators for immutable memtables 2. column family目前所有的Immutable memtable分别创建iterator
   if (s.ok()) {
     super_version->imm->AddIterators(read_options, &merge_iter_builder);
     if (!read_options.ignore_range_deletions) {
@@ -1447,6 +1447,7 @@ Iterator* DBImpl::NewIterator(const ReadOptions& read_options,
         read_callback);
 #endif
   } else {
+    //准备创建 iterator，可以看到有传入snapshot，实际创建迭代器的工作在NewIteratorImpl中完成
     auto snapshot = read_options.snapshot != nullptr
                         ? read_options.snapshot->GetSequenceNumber()
                         : versions_->LastSequence();

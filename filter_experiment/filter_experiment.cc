@@ -300,9 +300,9 @@ void benchOpenRangeQuery(rocksdb::DB* db, rocksdb::Options* options, uint64_t ke
     std::mt19937_64 e(2017);
     std::uniform_int_distribution<unsigned long long> dist(0, key_range);
 
-    std::vector<uint64_t> query_keys;
+    std::vector<uint64_t> query_keys;//要查询的key
 
-    for (uint64_t i = 0; i < query_count; i++) {
+    for (uint64_t i = 0; i < query_count; i++) {//根据查询次数进行初始化
 	uint64_t r = dist(e);
 	query_keys.push_back(r);
     }
@@ -418,7 +418,8 @@ void benchClosedRangeQuery(rocksdb::DB* db, rocksdb::Options* options, uint64_t 
 }
 
 void printIO() {
-    FILE* fp = fopen("/sys/block/sda/sda1/stat", "r");
+    // FILE* fp = fopen("/sys/block/sda/sda1/stat", "r");
+    FILE* fp = fopen("/sys/block/vda/vda2/stat", "r");
     if (fp == NULL) {
 	printf("Error: empty fp\n");
 	printf("%s\n", strerror(errno));
@@ -432,7 +433,8 @@ void printIO() {
 }
 
 uint64_t getIOCount() {
-    std::ifstream io_file(std::string("/sys/block/sda/sda1/stat"));
+    // std::ifstream io_file(std::string("/sys/block/sda/sda1/stat"));
+    std::ifstream io_file(std::string("/sys/block/vda/vda2/stat"));
     uint64_t io_count = 0;
     io_file >> io_count;
     return io_count;
